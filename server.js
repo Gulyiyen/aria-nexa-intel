@@ -23,8 +23,12 @@ app.post('/api/claude', async (req, res) => {
     if (!userMessage) {
       return res.status(400).json({ error: 'userMessage required' });
     }
-
+    
     const API_KEY = process.env.ANTHROPIC_API_KEY;
+    
+    // DEBUG: Log whether key exists (without exposing it)
+    console.log('API Key exists:', !!API_KEY);
+    console.log('API Key length:', API_KEY ? API_KEY.length : 0);
     
     if (!API_KEY) {
       return res.status(500).json({ 
