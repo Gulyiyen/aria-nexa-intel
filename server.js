@@ -24,19 +24,24 @@ app.post('/api/claude', async (req, res) => {
       return res.status(400).json({ error: 'userMessage required' });
     }
     
-    const API_KEY = process.env.ANTHROPIC_API_KEY;
+    // DEBUG: Log ALL environment variables (remove after testing)
+    console.log('=== ENVIRONMENT CHECK ===');
+    console.log('All env keys:', Object.keys(process.env));
+    console.log('ANTHROPIC_API_KEY exists:', !!process.env.ANTHROPIC_API_KEY);
+    console.log('ANTHROPIC_API_KEY length:', process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0);
+    console.log('========================');
     
-    // DEBUG: Log whether key exists (without exposing it)
-    console.log('API Key exists:', !!API_KEY);
-    console.log('API Key length:', API_KEY ? API_KEY.length : 0);
+    const API_KEY = process.env.ANTHROPIC_API_KEY;
     
     if (!API_KEY) {
       return res.status(500).json({ 
         error: 'API key not configured',
-        help: 'Add ANTHROPIC_API_KEY to Railway environment variables'
+        help: 'Add ANTHROPIC_API_KEY to Railway environment variables',
+        debug: {
+          envKeysFound: Object.keys(process.env).filter(k => k.includes('ANTHROPIC'))
+        }
       });
     }
-
     // Build request
     const body = {
       model: 'claude-3-5-sonnet-20240620',
