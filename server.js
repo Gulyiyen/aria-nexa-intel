@@ -24,7 +24,7 @@ app.post('/api/claude', async (req, res) => {
       return res.status(400).json({ error: 'userMessage required' });
     }
 
-    const API_KEY = process.env.ANTHROPIC_API_KEY;
+    const API_KEY = process.env.ANTHROPIC_API_KEY || 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;
     
     // DEBUG: Log environment info
     console.log('=== ENVIRONMENT CHECK ===');
