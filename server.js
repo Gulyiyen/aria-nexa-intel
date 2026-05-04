@@ -1,6 +1,6 @@
 // Aria Nexa Intelligence Backend for Railway
-// Updated: May 3, 2026
-// Environment: Production
+// Updated: May 3, 2026 - Added dotenv support
+require('dotenv').config(); // Load .env variables
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -23,25 +23,23 @@ app.post('/api/claude', async (req, res) => {
     if (!userMessage) {
       return res.status(400).json({ error: 'userMessage required' });
     }
-    
-    // DEBUG: Log ALL environment variables (remove after testing)
-    console.log('=== ENVIRONMENT CHECK ===');
-    console.log('All env keys:', Object.keys(process.env));
-    console.log('ANTHROPIC_API_KEY exists:', !!process.env.ANTHROPIC_API_KEY);
-    console.log('ANTHROPIC_API_KEY length:', process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0);
-    console.log('========================');
-    
+
     const API_KEY = process.env.ANTHROPIC_API_KEY;
+    
+    // DEBUG: Log environment info
+    console.log('=== ENVIRONMENT CHECK ===');
+    console.log('API_KEY exists:', !!API_KEY);
+    console.log('API_KEY length:', API_KEY ? API_KEY.length : 0);
+    console.log('All env keys:', Object.keys(process.env).filter(k => k.includes('ANTHROPIC')));
+    console.log('========================');
     
     if (!API_KEY) {
       return res.status(500).json({ 
         error: 'API key not configured',
-        help: 'Add ANTHROPIC_API_KEY to Railway environment variables',
-        debug: {
-          envKeysFound: Object.keys(process.env).filter(k => k.includes('ANTHROPIC'))
-        }
+        help: 'Add ANTHROPIC_API_KEY to Railway environment variables'
       });
     }
+
     // Build request
     const body = {
       model: 'claude-3-5-sonnet-20240620',
