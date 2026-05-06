@@ -42,11 +42,16 @@ app.post('/api/claude', async (req, res) => {
 
     // Build request
     const body = {
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: userMessage }]
-    };
-
+  model: 'claude-sonnet-4-6',
+  max_tokens: 4096,
+  messages: [{ role: 'user', content: userMessage }],
+  tools: useWebSearch ? [
+    { 
+      type: "web_search_20260209", // Current May 2026 version
+      name: "web_search" 
+    }
+  ] : []
+};
     if (systemPrompt) {
       body.system = systemPrompt;
     }
