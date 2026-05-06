@@ -40,22 +40,23 @@ app.post('/api/claude', async (req, res) => {
       });
     }
 
-    // Build request
+    // Final Corrected 2026 Build Request
     const body = {
-  model: 'claude-sonnet-4-6',
-  max_tokens: 4096,
-  messages: [{ role: 'user', content: userMessage }],
-  tools: useWebSearch ? [
-    { 
-      type: "web_search_20260209", // Current May 2026 version
-      name: "web_search" 
-    }
-  ] : []
-};
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: userMessage }],
+      tools: useWebSearch ? [
+        { 
+          type: "web_search_20260209", 
+          name: "web_search" 
+        }
+      ] : []
+    };
+
+    // Add the system prompt if it exists
     if (systemPrompt) {
       body.system = systemPrompt;
     }
-
     // Call Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
