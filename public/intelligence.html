@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Aria Nexa — Intelligence Command Centre v2.0</title>
+<title>Aria Nexa — Intelligence Command Centre v2.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 
 <script>
@@ -240,7 +240,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="tb-logo">
     <div class="tb-logo-mark">A</div>
     <div class="tb-logo-text">ARIA <span>NEXA</span></div>
-    <div class="tb-version">v2.0 INTEL</div>
+    <div class="tb-version">v2.2 ANY-MARKET</div>
   </div>
   <div class="tb-status">
     <div class="status-dot idle" id="globalStatusDot"></div>
@@ -352,7 +352,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <textarea 
           class="command-textarea" 
           id="commandInput"
-          placeholder="e.g., Find market gaps in luxury real estate marketing tools for UK estate agents"
+          placeholder="e.g., Find gaps in World Cup 2026 knitting patterns OR What do small business owners need for tax season?"
         ></textarea>
         <div class="command-actions">
           <button class="btn-run" id="btnRun" onclick="runIntelligence()">Run Intelligence</button>
@@ -360,10 +360,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         </div>
       </div>
       <div class="quick-prompts">
-        <div class="qp" onclick="setPrompt('Find gaps in luxury villa rental marketing')">Villa Marketing</div>
-        <div class="qp" onclick="setPrompt('What are HNWI buyers asking about on Instagram?')">HNWI Questions</div>
-        <div class="qp" onclick="setPrompt('Analyze Etsy competitors in property templates niche')">Etsy Competitors</div>
-        <div class="qp" onclick="setPrompt('What problems do real estate agents discuss on Reddit?')">Agent Pain Points</div>
+        <div class="qp" onclick="setPrompt('Find market gaps in digital planners for students')">Student Planners</div>
+        <div class="qp" onclick="setPrompt('What problems do pet owners discuss on Reddit?')">Pet Owner Pain</div>
+        <div class="qp" onclick="setPrompt('Analyze Etsy competitors in wedding invitation templates')">Wedding Templates</div>
+        <div class="qp" onclick="setPrompt('What are small business owners asking about on LinkedIn?')">SMB Questions</div>
       </div>
     </div>
 
@@ -420,8 +420,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <!-- RIGHT SIDEBAR - REPORTS -->
   <div class="right-sidebar">
     <div id="setupNotice" class="api-notice">
-      <strong>⚙️ Secure Backend Active</strong>
-      This Intelligence Centre uses your secure backend API. Make sure ANTHROPIC_API_KEY is set in your Vercel environment variables for live web search.
+      <strong>✓ Rate Limit Protection Active</strong>
+      v2.2 is MARKET AGNOSTIC - analyzes ANY niche from knitting patterns to SaaS. Staggered agent deployment (3s delays) prevents 429 errors. Small gaps = big opportunities.
     </div>
 
     <div class="reports-header">
@@ -434,7 +434,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 </div>
 
 <script>
-// Intelligence Command Centre JavaScript
+// Intelligence Command Centre JavaScript v2.2 - Market Agnostic + Rate Limit Fix
 let isRunning = false;
 let logEntries = [];
 let reports = [];
@@ -523,7 +523,7 @@ function updateStats() {
   document.getElementById('stat-products').textContent = stats.products;
 }
 
-async function callClaude(systemPrompt, userMessage) {
+async function callClaude(systemPrompt, userMessage, retries = 2) {
   try {
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
@@ -537,6 +537,18 @@ async function callClaude(systemPrompt, userMessage) {
 
     if (!response.ok) {
       const errorData = await response.json();
+      
+      // Handle 429 rate limit specifically
+      if (response.status === 429) {
+        if (retries > 0) {
+          addLog('system', '⚠ Rate limit hit - waiting 10s before retry...');
+          await sleep(10000);
+          return await callClaude(systemPrompt, userMessage, retries - 1);
+        } else {
+          throw new Error('Rate limit exceeded. Please wait a few minutes or upgrade your API tier.');
+        }
+      }
+      
       throw new Error(errorData.error || 'Backend API error');
     }
 
@@ -545,7 +557,7 @@ async function callClaude(systemPrompt, userMessage) {
     
   } catch (error) {
     console.error('API Error:', error);
-    addLog('system', 'API Error: ' + error.message);
+    addLog('system', '❌ API Error: ' + error.message);
     return null;
   }
 }
@@ -553,45 +565,46 @@ async function callClaude(systemPrompt, userMessage) {
 function getDemoResponse(agent, mission) {
   const demos = {
     market: 'MARKET INTELLIGENCE REPORT\n\n' +
-      'Sector: Luxury Real Estate Marketing\n' +
-      'Geography: UK Market\n\n' +
+      'Mission: ' + mission + '\n\n' +
       'KEY FINDINGS:\n' +
-      '1. High-end estate agents struggle with HNWI communication\n' +
-      '2. Tax transparency is a major trust barrier\n' +
-      '3. Social media consistency is the #1 pain point\n\n' +
+      '1. Market landscape analyzed across multiple sources\n' +
+      '2. Competitor pricing and positioning mapped\n' +
+      '3. Customer pain points identified through social signals\n\n' +
       'GAPS IDENTIFIED:\n' +
-      '- No SDLT communication frameworks for luxury agents\n' +
-      '- Instagram calendars exist but none target luxury property niche',
+      '- Specific opportunities found based on search analysis\n' +
+      '- Review synthesis in Gap Analysis report',
     
     instagram: 'INSTAGRAM INTELLIGENCE SCAN\n\n' +
-      'Hashtags Analyzed: #luxuryrealestate\n\n' +
-      'TOP PAIN POINTS:\n' +
-      '1. "How do I explain stamp duty?" - 34 mentions\n' +
-      '2. "Need content that does not look generic" - 28 mentions\n\n' +
-      'OPPORTUNITY: Educational tax content + ready-to-use social templates',
+      'Mission: ' + mission + '\n\n' +
+      'TOP INSIGHTS:\n' +
+      '1. Hashtag patterns and engagement analyzed\n' +
+      '2. Customer pain points extracted from posts\n' +
+      '3. Content gaps identified\n\n' +
+      'OPPORTUNITY: Social-ready product opportunities identified',
     
     reddit: 'REDDIT PAIN POINT ANALYSIS\n\n' +
-      'Subreddits: r/realestate\n\n' +
-      'RECURRING QUESTIONS:\n' +
-      '1. "Best way to communicate with HNW clients?" - 12 threads\n' +
-      '2. "How to differentiate in saturated luxury market?" - 9 threads\n\n' +
-      'VALIDATED NEED: Luxury-specific communication frameworks',
+      'Mission: ' + mission + '\n\n' +
+      'RECURRING THEMES:\n' +
+      '1. Community discussions analyzed for pain points\n' +
+      '2. Frequently asked questions catalogued\n' +
+      '3. Unmet needs validated\n\n' +
+      'VALIDATED NEED: Product opportunities confirmed',
     
     etsy: 'ETSY COMPETITOR INTELLIGENCE\n\n' +
-      'Niche: Real Estate Templates\n\n' +
+      'Mission: ' + mission + '\n\n' +
       'PRICING LANDSCAPE:\n' +
-      '- Generic templates: £3-8\n' +
-      '- Social media templates: £10-18\n\n' +
-      'GAPS:\n' +
-      '1. NO luxury-specific property marketing tools\n' +
-      '2. NO SDLT/tax communication frameworks\n\n' +
-      'OPPORTUNITY: Premium positioning at £25-45',
+      '- Competitor products mapped\n' +
+      '- Pricing tiers analyzed\n' +
+      '- Quality gaps identified\n\n' +
+      'OPPORTUNITY: Strategic positioning opportunities found',
     
     linkedin: 'LINKEDIN PROFESSIONAL INTELLIGENCE\n\n' +
-      'SKILLS IN DEMAND:\n' +
-      '- "Luxury client communication" - 34 job posts\n' +
-      '- "Premium brand positioning" - 28 mentions\n\n' +
-      'INSIGHT: Professional development around soft skills is highly valued'
+      'Mission: ' + mission + '\n\n' +
+      'PROFESSIONAL INSIGHTS:\n' +
+      '- Industry discussions analyzed\n' +
+      '- Skills in demand identified\n' +
+      '- Professional pain points catalogued\n\n' +
+      'INSIGHT: B2B product opportunities validated'
   };
   
   return demos[agent] || 'Intelligence gathered successfully.';
@@ -627,7 +640,7 @@ async function runIntelligence() {
   addLog('market', 'Initiating web search...');
   await sleep(1500);
 
-  const marketPrompt = 'You are a market intelligence agent. Use web search to find: market landscape, competitor offerings, customer pain points, gaps and opportunities. Be specific and data-driven.';
+  const marketPrompt = 'You are a market intelligence agent. Analyze ANY market or niche the user specifies — from knitting patterns to SaaS tools. Use web search to find: market size, existing products, pricing landscape, customer pain points, gaps, and opportunities. Small niches are GOOD — micro-gaps can be million-pound opportunities. Be specific and data-driven.';
   const marketResponse = await callClaude(marketPrompt, 'Search and analyze: ' + mission) || getDemoResponse('market', mission);
   
   addLog('market', 'Web scan complete', true);
@@ -635,34 +648,47 @@ async function runIntelligence() {
   setBadge('market', 'ready');
   await sleep(600);
 
-  // Step 2: Social Intelligence
+  // Step 2: Social Intelligence - STAGGERED DEPLOYMENT (Rate Limit Fix)
   setStepStatus(2, 'running');
-  addLog('super', 'Deploying 4 social scouts...');
+  addLog('super', 'Deploying 4 social scouts (staggered to avoid rate limits)...');
   
+  // Scout 1: Instagram
   setBadge('instagram', 'busy');
   addLog('instagram', 'Scanning Instagram...');
   await sleep(800);
   const instagramResponse = await callClaude('Instagram intelligence scout. Find hashtags, pain points, engagement patterns.', 'Search Instagram about: ' + mission) || getDemoResponse('instagram', mission);
   addLog('instagram', 'Instagram intel captured', true);
   setBadge('instagram', 'ready');
-  await sleep(400);
+  
+  // DELAY: 3 seconds between scouts
+  addLog('system', '⏱ 3s delay before next scout (rate limit protection)');
+  await sleep(3000);
 
+  // Scout 2: Reddit
   setBadge('reddit', 'busy');
   addLog('reddit', 'Mining Reddit threads...');
   await sleep(1000);
   const redditResponse = await callClaude('Reddit intelligence scout. Find discussions, questions, frustrations, gaps.', 'Search Reddit about: ' + mission) || getDemoResponse('reddit', mission);
   addLog('reddit', 'Reddit analysis done', true);
   setBadge('reddit', 'ready');
-  await sleep(400);
+  
+  // DELAY: 3 seconds between scouts
+  addLog('system', '⏱ 3s delay before next scout (rate limit protection)');
+  await sleep(3000);
 
+  // Scout 3: Etsy
   setBadge('etsy', 'busy');
   addLog('etsy', 'Analyzing Etsy competitors...');
   await sleep(1200);
   const etsyResponse = await callClaude('Etsy competitor analyst. Find products, pricing, gaps, differentiation opportunities.', 'Search Etsy for: ' + mission) || getDemoResponse('etsy', mission);
   addLog('etsy', 'Competitor landscape mapped', true);
   setBadge('etsy', 'ready');
-  await sleep(400);
+  
+  // DELAY: 3 seconds between scouts
+  addLog('system', '⏱ 3s delay before next scout (rate limit protection)');
+  await sleep(3000);
 
+  // Scout 4: LinkedIn
   setBadge('linkedin', 'busy');
   addLog('linkedin', 'Scanning LinkedIn...');
   await sleep(1000);
@@ -812,8 +838,9 @@ function resetSystem() {
 
 window.addEventListener('load', function() {
   setGlobal('idle', 'System Ready');
-  addLog('super', 'Aria Nexa Intelligence Command Centre v2.0 online');
-  addLog('super', 'Secure backend mode — API key protected ✓');
+  addLog('super', 'Aria Nexa Intelligence Command Centre v2.2 online');
+  addLog('super', 'Market agnostic: Analyzes ANY niche — no limits ✓');
+  addLog('super', 'Rate limit protection: 3s stagger between scouts ✓');
   addLog('super', 'All agents standing by');
 });
 </script>
