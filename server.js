@@ -1,21 +1,15 @@
-// Aria Nexa Secure Backend API - v2.1 Rate Limit Fix
-// Updated: May 2026
-module.exports = async (req, res) => {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  // Only allow POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+const express = require('express');
+const path = require('path');
+const app = express();
 
+// Middleware
+app.use(express.json());
+app.use(express.static('public'));
+
+// API endpoint
+app.post('/api/claude', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
   try {
     const { systemPrompt, userMessage, useWebSearch } = req.body;
     
@@ -23,28 +17,20 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'userMessage required' });
     }
 
-    // Get API key from environment
     const API_KEY = process.env.ANTHROPIC_API_KEY;
     
     if (!API_KEY) {
-      return res.status(500).json({ 
-        error: 'API key not configured',
-        help: 'Add ANTHROPIC_API_KEY to Vercel/Render environment variables'
-      });
+      return res.status(500).json({ error: 'API key not configured' });
     }
 
-    // Build request with CORRECT MODEL
     const body = {
-      model: 'claude-sonnet-4-6',  // Updated to May 2026 model
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [{ role: 'user', content: userMessage }]
     };
 
-    if (systemPrompt) {
-      body.system = systemPrompt;
-    }
+    if (systemPrompt) body.system = systemPrompt;
 
-    // Enable web search with correct 2026 tool type
     if (useWebSearch) {
       body.tools = [{ 
         type: "web_search_20260209", 
@@ -52,7 +38,6 @@ module.exports = async (req, res) => {
       }];
     }
 
-    // Call Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -65,31 +50,25 @@ module.exports = async (req, res) => {
 
     if (!response.ok) {
       const error = await response.json();
-      
-      // Log rate limit errors for debugging
       if (response.status === 429) {
-        console.error('⚠ 429 Rate Limit Hit:', error);
+        console.error('⚠ 429 Rate Limit:', error);
       }
-      
       return res.status(response.status).json({ 
-        error: 'Anthropic API error', 
+        error: 'API error', 
         details: error 
       });
     }
 
     const data = await response.json();
     
-    // Extract text from response
     let text = '';
     if (data.content) {
       for (const block of data.content) {
-        if (block.type === 'text') {
-          text += block.text + '\n';
-        }
+        if (block.type === 'text') text += block.text + '\n';
       }
     }
 
-    return res.status(200).json({
+    return res.json({
       success: true,
       response: text.trim() || 'No response',
       usage: data.usage
@@ -102,4 +81,16 @@ module.exports = async (req, res) => {
       message: error.message 
     });
   }
-};
+});
+
+// Health check
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Aria Nexa Intelligence running on port ${PORT}`);
+  console.log(`API_KEY exists: ${!!process.env.ANTHROPIC_API_KEY}`);
+});
